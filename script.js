@@ -13,6 +13,9 @@ const character =
 const message =
     document.querySelector("#message");
 
+const hero =
+    document.querySelector(".hero");
+
 
 /* =========================================
    STATE
@@ -22,9 +25,12 @@ let currentZone = "center";
 
 let reactionTimer = null;
 
+let lastPointerX =
+    window.innerWidth / 2;
+
 
 /* =========================================
-   REACT TO USER POSITION
+   CHARACTER REACTION
 ========================================= */
 
 function reactToZone(zone) {
@@ -34,8 +40,6 @@ function reactToZone(zone) {
     }
 
 
-    /* Don't repeat the same reaction */
-
     if (zone === currentZone) {
         return;
     }
@@ -43,8 +47,6 @@ function reactToZone(zone) {
 
     currentZone = zone;
 
-
-    /* Clear previous timer */
 
     clearTimeout(reactionTimer);
 
@@ -56,7 +58,7 @@ function reactToZone(zone) {
     if (zone === "left") {
 
         character.style.transform =
-            "translateX(-25px) rotate(-2deg)";
+            "translateX(-28px) rotate(-2deg)";
 
 
         message.style.opacity = "0";
@@ -69,7 +71,7 @@ function reactToZone(zone) {
 
             message.style.opacity = "1";
 
-        }, 200);
+        }, 180);
 
     }
 
@@ -81,7 +83,7 @@ function reactToZone(zone) {
     else if (zone === "right") {
 
         character.style.transform =
-            "translateX(25px) rotate(2deg)";
+            "translateX(28px) rotate(2deg)";
 
 
         message.style.opacity = "0";
@@ -94,7 +96,7 @@ function reactToZone(zone) {
 
             message.style.opacity = "1";
 
-        }, 200);
+        }, 180);
 
     }
 
@@ -119,26 +121,27 @@ function reactToZone(zone) {
 
             message.style.opacity = "1";
 
-        }, 200);
+        }, 180);
 
 
-        /* After a short delay */
-
-        reactionTimer = setTimeout(function () {
-
-            message.style.opacity = "0";
-
-
+        reactionTimer =
             setTimeout(function () {
 
-                message.textContent =
-                    "Check out the portfolio";
 
-                message.style.opacity = "1";
+                message.style.opacity = "0";
 
-            }, 250);
 
-        }, 1500);
+                setTimeout(function () {
+
+                    message.textContent =
+                        "Check out my portfolio ↓";
+
+                    message.style.opacity = "1";
+
+                }, 250);
+
+
+            }, 1500);
 
     }
 
@@ -149,27 +152,28 @@ function reactToZone(zone) {
 
     if (zone !== "center") {
 
-        reactionTimer = setTimeout(function () {
-
-
-            character.style.transform =
-                "translateX(0) rotate(0deg)";
-
-
-            message.style.opacity = "0";
-
-
+        reactionTimer =
             setTimeout(function () {
 
-                message.textContent =
-                    "Back to work...";
 
-                message.style.opacity = "1";
-
-            }, 250);
+                character.style.transform =
+                    "translateX(0) rotate(0deg)";
 
 
-        }, 2500);
+                message.style.opacity = "0";
+
+
+                setTimeout(function () {
+
+                    message.textContent =
+                        "Back to work...";
+
+                    message.style.opacity = "1";
+
+                }, 250);
+
+
+            }, 2200);
 
     }
 
@@ -177,58 +181,50 @@ function reactToZone(zone) {
 
 
 /* =========================================
-   DETECT LEFT / CENTER / RIGHT
+   DETECT INTERACTION ZONE
 ========================================= */
 
 function detectZone(x) {
 
-    const screenWidth =
+    const width =
         window.innerWidth;
 
 
-    /*
-        LEFT
-        0% - 33%
-    */
-
-    if (x < screenWidth * 0.33) {
+    if (x < width * 0.30) {
 
         return "left";
 
     }
 
 
-    /*
-        RIGHT
-        66% - 100%
-    */
-
-    if (x > screenWidth * 0.66) {
+    if (x > width * 0.70) {
 
         return "right";
 
     }
 
 
-    /*
-        CENTER
-        33% - 66%
-    */
-
     return "center";
+
 }
 
 
 /* =========================================
-   DESKTOP MOUSE
+   POINTER MOVEMENT
 ========================================= */
 
 document.addEventListener(
     "mousemove",
     function (event) {
 
+        lastPointerX =
+            event.clientX;
+
+
         const zone =
-            detectZone(event.clientX);
+            detectZone(
+                event.clientX
+            );
 
 
         reactToZone(zone);
@@ -238,7 +234,7 @@ document.addEventListener(
 
 
 /* =========================================
-   MOBILE TOUCH START
+   TOUCH START
 ========================================= */
 
 document.addEventListener(
@@ -252,12 +248,14 @@ document.addEventListener(
         ) {
 
 
-            const touchX =
+            lastPointerX =
                 event.touches[0].clientX;
 
 
             const zone =
-                detectZone(touchX);
+                detectZone(
+                    lastPointerX
+                );
 
 
             reactToZone(zone);
@@ -272,7 +270,7 @@ document.addEventListener(
 
 
 /* =========================================
-   MOBILE TOUCH MOVE
+   TOUCH MOVE
 ========================================= */
 
 document.addEventListener(
@@ -286,12 +284,14 @@ document.addEventListener(
         ) {
 
 
-            const touchX =
+            lastPointerX =
                 event.touches[0].clientX;
 
 
             const zone =
-                detectZone(touchX);
+                detectZone(
+                    lastPointerX
+                );
 
 
             reactToZone(zone);
@@ -306,7 +306,124 @@ document.addEventListener(
 
 
 /* =========================================
-   INITIAL GREETING
+   IDLE CHARACTER MOVEMENT
+========================================= */
+
+let idleTime = 0;
+
+
+function idleAnimation() {
+
+
+    if (
+        character &&
+        currentZone === "center"
+    ) {
+
+
+        idleTime += 0.015;
+
+
+        const movement =
+            Math.sin(idleTime) * 2;
+
+
+        character.style.transform =
+            "translateY(" +
+            movement +
+            "px)";
+
+    }
+
+
+    requestAnimationFrame(
+        idleAnimation
+    );
+
+}
+
+
+if (character) {
+
+    idleAnimation();
+
+}
+
+
+/* =========================================
+   CREATE FLOATING PARTICLES
+========================================= */
+
+function createParticles() {
+
+
+    if (!hero) {
+        return;
+    }
+
+
+    const particleContainer =
+        document.createElement(
+            "div"
+        );
+
+
+    particleContainer.className =
+        "particles";
+
+
+    for (
+        let i = 0;
+        i < 25;
+        i++
+    ) {
+
+
+        const particle =
+            document.createElement(
+                "span"
+            );
+
+
+        particle.className =
+            "particle";
+
+
+        particle.style.left =
+            Math.random() * 100 + "%";
+
+
+        particle.style.top =
+            Math.random() * 100 + "%";
+
+
+        particle.style.animationDelay =
+            Math.random() * 5 + "s";
+
+
+        particle.style.animationDuration =
+            4 + Math.random() * 5 + "s";
+
+
+        particleContainer.appendChild(
+            particle
+        );
+
+    }
+
+
+    hero.appendChild(
+        particleContainer
+    );
+
+}
+
+
+createParticles();
+
+
+/* =========================================
+   INITIAL MESSAGE
 ========================================= */
 
 window.addEventListener(
@@ -314,18 +431,21 @@ window.addEventListener(
     function () {
 
 
-        setTimeout(function () {
+        setTimeout(
+            function () {
 
 
-            if (message) {
+                if (message) {
 
-                message.textContent =
-                    "Hey, it's you!";
+                    message.textContent =
+                        "Hey, it's you!";
 
-            }
+                }
 
 
-        }, 500);
+            },
+            500
+        );
 
     }
 );
@@ -351,7 +471,9 @@ navigationLinks.forEach(
 
 
                 const targetId =
-                    this.getAttribute("href");
+                    this.getAttribute(
+                        "href"
+                    );
 
 
                 const target =
@@ -361,7 +483,6 @@ navigationLinks.forEach(
 
 
                 if (target) {
-
 
                     event.preventDefault();
 
@@ -380,62 +501,17 @@ navigationLinks.forEach(
 
 
 /* =========================================
-   CHARACTER IDLE ANIMATION
+   RESIZE HANDLING
 ========================================= */
 
-let idleDirection = 1;
-
-let idlePosition = 0;
-
-
-function idleAnimation() {
+window.addEventListener(
+    "resize",
+    function () {
 
 
-    /*
-        Don't override a user reaction.
-        Keep this very subtle.
-    */
+        lastPointerX =
+            window.innerWidth / 2;
 
-    if (
-        currentZone === "center"
-    ) {
-
-
-        idlePosition +=
-            0.02 * idleDirection;
-
-
-        if (idlePosition > 2) {
-
-            idleDirection = -1;
-
-        }
-
-
-        if (idlePosition < -2) {
-
-            idleDirection = 1;
-
-        }
-
-
-        character.style.transform =
-            "translateY(" +
-            idlePosition +
-            "px)";
 
     }
-
-
-    requestAnimationFrame(
-        idleAnimation
-    );
-
-}
-
-
-if (character) {
-
-    idleAnimation();
-
-}
+);
